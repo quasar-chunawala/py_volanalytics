@@ -6,4 +6,4 @@ Over time, the cost of writing my own library and the understanding and flexibil
 
 References
 ----------
-- [The local volaility surface](https://emanuelderman.com/wp-content/uploads/1996/06/gs-local_volatility_surface.pdf), *Emanuel Derman, 1996*
+- [The local volatility surface](https://emanuelderman.com/wp-content/uploads/1996/06/gs-local_volatility_surface.pdf), *Emanuel Derman, 1996*
