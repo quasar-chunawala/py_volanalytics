@@ -4,6 +4,9 @@ I would like to research and code up robust implementations of vol-fitting metho
 
 Over time, the cost of writing my own library and the understanding and flexibility that comes with it will hopefully outweigh the sunk cost of building things ground up. 
 
+Installation
+-------------
+
 References
 ----------
 - [The local volatility surface](https://emanuelderman.com/wp-content/uploads/1996/06/gs-local_volatility_surface.pdf), *Emanuel Derman, 1996*
