@@ -14,6 +14,10 @@ Installation
 pip install py_volanalytics
 ```
 
+PyPi package
+------------
+[py_volanalytics](https://pypi.org/project/py-volanalytics/0.1.0/)
+
 References
 ----------
 - [The local volatility surface](https://emanuelderman.com/wp-content/uploads/1996/06/gs-local_volatility_surface.pdf), *Emanuel Derman, 1996*
