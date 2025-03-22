@@ -1,0 +1,20 @@
+[project]
+name = "py_volanalytics"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "quasar-chunawala", email = "quasar.chunawala@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "aleatory>=1.0.1",
+    "numpy>=2.2.4",
+]
+
+[project.scripts]
+py_volanalytics = "py_volanalytics:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
