@@ -23,4 +23,9 @@ setup(
     author_email="quasar.chunawala@gmail.com",
     license="MIT",
     python_requires=">=3.12",
+    classifiers=[
+        "Programming Language :: Python :: 3.12",
+        "Operating System :: OS Independent"
+    ],
+    url="https://github.com/quasar-chunawala/py_volanalytics",
 )

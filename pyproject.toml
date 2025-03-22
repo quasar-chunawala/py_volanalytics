@@ -1,12 +1,13 @@
 [project]
 name = "py_volanalytics"
 version = "0.1.0"
-description = "Add your description here"
+description = "Vol-fitting methods and pricing-analytics for volatility derivatives"
 readme = "README.md"
 authors = [
     { name = "quasar-chunawala", email = "quasar.chunawala@gmail.com" }
 ]
 requires-python = ">=3.12"
+
 dependencies = [
     "aleatory>=1.0.1",
     "attrs>=25.3.0",
@@ -20,6 +21,9 @@ dependencies = [
     "twine>=6.1.0",
     "wheel>=0.45.1",
 ]
+
+[project.urls]
+Homepage="https://github.com/quasar-chunawala/py_volanalytics"
 
 [build-system]
 requires = ["hatchling"]
