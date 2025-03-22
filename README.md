@@ -4,8 +4,15 @@ I would like to research and code up robust implementations of vol-fitting metho
 
 Over time, the cost of writing my own library and the understanding and flexibility that comes with it will hopefully outweigh the sunk cost of building things ground up. 
 
+Features
+--------
+
+
 Installation
 -------------
+```
+pip install py_volanalytics
+```
 
 References
 ----------
