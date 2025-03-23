@@ -32,7 +32,7 @@ References:
 import numpy as np
 import datetime as dt
 from abc import ABC, abstractmethod
-from enum import IntEnum
+from enum import IntEnum, StrEnum
 from typing import List, cast, Optional
 from attrs import define, field
 import matplotlib.pyplot as plt
@@ -52,6 +52,16 @@ class ExtrapolateIndex(IntEnum):
 
     FRONT = -1
     BACK = -2
+
+class BoundaryCondition(StrEnum):
+    """
+    Helper boundary conditions enum.
+
+    Indicates if this is a natural cubic spline, or Hermite(Bessel)
+    """
+
+    NATURAL_CUBIC_SPLINE = "Natural Cubic Spline"
+    HERMITE_SPLINE       = "Hermite Spline"
 
 @define(kw_only=True)
 class Interpolator(ABC):
@@ -106,6 +116,15 @@ class Interpolator(ABC):
         # unambiguous since we validated equal len
         return len(self._xs)
     
+    def __find_index(self, x: float) -> int:
+        """Helper function to get the adjacent index."""
+        if x < self._xs[0]:
+            return ExtrapolateIndex.FRONT
+        for i in range(len(self) - 1):
+            if self._xs[i] <= x < self._xs[i + 1]:
+                return i
+        return ExtrapolateIndex.BACK
+    
     def _convert_to_float(self, delta: float | dt.timedelta) -> float:
         """Convert the potential time delta to year fraction float."""
         if isinstance(delta, dt.timedelta):
@@ -138,17 +157,8 @@ class LinearInterpolator(Interpolator):
                     self._ys[index]
                     + self._convert_to_float(x - self._xs[index]) * slope
                 )
-        # enforce float -> flot signature of interpolator
+        # enforce float -> float signature of interpolator
         return float(result)
-
-    def __find_index(self, x: float) -> int:
-        """Helper function to get the adjacent index."""
-        if x < self._xs[0]:
-            return ExtrapolateIndex.FRONT
-        for i in range(len(self) - 1):
-            if self._xs[i] <= x < self._xs[i + 1]:
-                return i
-        return ExtrapolateIndex.BACK
 
     def plot(
         self,
@@ -169,3 +179,63 @@ class LinearInterpolator(Interpolator):
         
         plt.plot(x_values, y_values)
         plt.show()
+
+class CubicSplineInterpolator(Interpolator):
+    """ The cubic-spline method with the so-called natural boundary conditions. """
+
+    def __call__(self, 
+                 x: float | dt.date,
+                 boundary_condition : BoundaryCondition = BoundaryCondition.NATURAL_CUBIC_SPLINE
+                ) -> float:
+        """Call to get interpolated y value."""
+        index = self.__find_index(x)
+
+         # negative index mean outside range
+        if index < 0 and not self.is_extrapolator:
+            raise ValueError(
+                "Given range outside of interpolated range to non-extrapolator."
+            )
+        match index:
+            case ExtrapolateIndex.FRONT:
+                result = self._ys[0]
+            case ExtrapolateIndex.BACK:
+                result = self._ys[-1]
+            case _:
+                n = len(self) - 1
+                h = np.array([self._xs[j+1] - self._xs[j] for j in range(n)])
+                a = np.array(self._ys[:n])
+
+                # We are interested to solve the system Ux = v. 
+                v = np.concat([
+                    [0], 
+                    [(3/h[j]*(a[j+1] - a[j]) - 3/h[j-1] * (a[j] - a[j-1])) for j in range(1,n)],
+                    [0]
+                ], axis=0)
+
+                # U is a tridiagonal matrix
+                U = np.zeros(shape=(n+1,n+1))
+                U[0][0] = 1.0
+                U[n][n] = 1.0
+                for i in range(1,n):
+                    U[i][i-1] = h[i-1]              # elements below the diagonal
+                    U[i][i] = 2*(h[[i-1] + h[i]])   #principal diagonal element
+                    U[i][i+1] = h[i+1]              # elements above the diagonal
+                
+                c = np.linalg.solve(U, v)
+
+                b = np.array([(
+                        1.0/h[j] * (a[j+1] - a[j]) 
+                        - h[j]/3.0 * (2 * c[j+1] + c[j])
+                    ) for j in range(n) 
+                    ])
+                
+                d = np.array(
+                    [
+                        (c[j+1] - c[j])/(3 * h[j]) for j in range(n)
+                    ]
+                )
+
+                return (a[index] + b[index] * (x - self._xs[index])
+                        + c[index] * (x - self._xs[index])**2 
+                        + d[index] * (x - self._xs[index])**3
+                )
