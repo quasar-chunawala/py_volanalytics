@@ -1,6 +1,6 @@
 [project]
 name = "py_volanalytics"
-version = "0.1.0"
+version = "0.1.1"
 description = "Vol-fitting methods and pricing-analytics for volatility derivatives"
 readme = "README.md"
 authors = [

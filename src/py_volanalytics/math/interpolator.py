@@ -61,7 +61,6 @@ class BoundaryCondition(StrEnum):
     """
 
     NATURAL_CUBIC_SPLINE = "Natural Cubic Spline"
-    HERMITE_SPLINE       = "Hermite Spline"
 
 @define(kw_only=True)
 class Interpolator(ABC):
@@ -116,7 +115,7 @@ class Interpolator(ABC):
         # unambiguous since we validated equal len
         return len(self._xs)
     
-    def __find_index(self, x: float) -> int:
+    def _find_index(self, x: float) -> int:
         """Helper function to get the adjacent index."""
         if x < self._xs[0]:
             return ExtrapolateIndex.FRONT
@@ -130,14 +129,34 @@ class Interpolator(ABC):
         if isinstance(delta, dt.timedelta):
             # convert to year fraction, assume daily granularity
             delta = delta.days / 365
-        return cast(float, delta)    
+        return cast(float, delta)   
+
+    def plot(
+        self,
+        title : Optional[str] = None,
+        x_label : Optional[str] = None,
+        y_label : Optional[str] = None
+    ):
+        """ Helper function to plot an interpolated curve """
+        x_values = np.linspace(start=self._xs[0], stop=self._xs[-1], num=len(self) * 100)
+        y_values = [self(x) for x in x_values]
+        xlabel = x_label if x_label is not None else r'$x$'
+        ylabel = y_label if y_label is not None else r'$y$'
+        title = title if title is not None else r'Interpolated curve $y(x)$'
+        plt.figure(figsize=(8,6))
+        plt.title(title)
+        plt.xlabel(xlabel = xlabel)
+        plt.ylabel(ylabel = ylabel)
+        
+        plt.plot(x_values, y_values)
+        plt.show() 
     
 class LinearInterpolator(Interpolator):
     """Interpolator using linear interpolation, constant extrapolation."""
 
     def __call__(self, x: float | dt.date) -> float:
         """Call to get interpolated y value."""
-        index = self.__find_index(x)
+        index = self._find_index(x)
 
         # negative index mean outside range
         if index < 0 and not self.is_extrapolator:
@@ -160,35 +179,15 @@ class LinearInterpolator(Interpolator):
         # enforce float -> float signature of interpolator
         return float(result)
 
-    def plot(
-        self,
-        title : Optional[str] = None,
-        x_label : Optional[str] = None,
-        y_label : Optional[str] = None
-    ):
-        """ Helper function to plot an interpolated curve """
-        x_values = np.linspace(start=self._xs[0], stop=self._xs[-1], num=len(self) * 100)
-        y_values = [self(x) for x in x_values]
-        xlabel = x_label if x_label is not None else r'$x$'
-        ylabel = y_label if y_label is not None else r'$y$'
-        title = title if title is not None else r'Interpolated curve $y(x)$'
-        plt.figure(figsize=(8,6))
-        plt.title(title)
-        plt.xlabel(xlabel = xlabel)
-        plt.ylabel(ylabel = ylabel)
-        
-        plt.plot(x_values, y_values)
-        plt.show()
-
 class CubicSplineInterpolator(Interpolator):
-    """ The cubic-spline method with the so-called natural boundary conditions. """
+    """ The cubic-spline method with so-called natural boundary conditions. """
 
     def __call__(self, 
                  x: float | dt.date,
                  boundary_condition : BoundaryCondition = BoundaryCondition.NATURAL_CUBIC_SPLINE
                 ) -> float:
         """Call to get interpolated y value."""
-        index = self.__find_index(x)
+        index = self._find_index(x)
 
          # negative index mean outside range
         if index < 0 and not self.is_extrapolator:
@@ -201,9 +200,9 @@ class CubicSplineInterpolator(Interpolator):
             case ExtrapolateIndex.BACK:
                 result = self._ys[-1]
             case _:
-                n = len(self) - 1
+                n = len(self) - 1   #n is the index of the last data-point. 
                 h = np.array([self._xs[j+1] - self._xs[j] for j in range(n)])
-                a = np.array(self._ys[:n])
+                a = np.array(self._ys[:n+1])
 
                 # We are interested to solve the system Ux = v. 
                 v = np.concat([
@@ -218,14 +217,14 @@ class CubicSplineInterpolator(Interpolator):
                 U[n][n] = 1.0
                 for i in range(1,n):
                     U[i][i-1] = h[i-1]              # elements below the diagonal
-                    U[i][i] = 2*(h[[i-1] + h[i]])   #principal diagonal element
-                    U[i][i+1] = h[i+1]              # elements above the diagonal
+                    U[i][i] = 2*(h[i-1] + h[i])   #principal diagonal element
+                    U[i][i+1] = h[i]              # elements above the diagonal
                 
                 c = np.linalg.solve(U, v)
 
                 b = np.array([(
                         1.0/h[j] * (a[j+1] - a[j]) 
-                        - h[j]/3.0 * (2 * c[j+1] + c[j])
+                        - h[j]/3.0 * (2 * c[j] + c[j+1])
                     ) for j in range(n) 
                     ])
                 
@@ -235,7 +234,95 @@ class CubicSplineInterpolator(Interpolator):
                     ]
                 )
 
-                return (a[index] + b[index] * (x - self._xs[index])
+                result = (a[index] + b[index] * (x - self._xs[index])
                         + c[index] * (x - self._xs[index])**2 
                         + d[index] * (x - self._xs[index])**3
                 )
+
+        return float(result)
+            
+class HermiteCubicSplineInterpolator(Interpolator):
+    """ The hermite cubic-spline method with so-called natural boundary conditions. """
+
+    def __call__(self, 
+                 x: float | dt.date,) -> float:
+        """Call to get interpolated y value.""" 
+        index = self.__find_index(x)
+
+         # negative index mean outside range
+        if index < 0 and not self.is_extrapolator:
+            raise ValueError(
+                "Given range outside of interpolated range to non-extrapolator."
+            )
+        match index:
+            case ExtrapolateIndex.FRONT:
+                result = self._ys[0]
+            case ExtrapolateIndex.BACK:
+                result = self._ys[-1]
+            case _:
+                n = len(self) - 1   #n is the index of the last data-point. 
+                h = np.array([self._xs[j+1] - self._xs[j] for j in range(n)])
+                a = np.array(self._ys[:n+1])                        
+                m = np.array([ (self._ys[i+1] - self._ys[i])/h[i] for i in range(n) ])
+
+                b = np.concat(
+                    [1/(self._xs[2] - self._xs[0]) * 
+                     (
+                         ((self._xs[2] + self._xs[1] - 2 * self._xs[0]) * (self._ys[1] - self._ys[0]) / h[0])
+                         -( h[0] * (self._ys[1] - self._ys[0]) / h[1] )
+                     )
+                     ],
+                    [
+                        (1/(self._xs[i+1] - self._xs[i-1])) *
+                        (
+                            h[i] * (self._ys[i] - self._ys[i]) / h[i-1]
+                            - h[i-1] * (self._ys[i+1] - self._ys[i]) / h[i]
+                        )
+                        for i in range(1,n)
+                    ],
+                    [
+                        -1/(self._xs[n] - self._xs[n-2]) *
+                        (
+                            (h[n-1] * (self._ys[n-1] - self._ys[n-2])/h[n-2])
+                            - ( (2 * self._xs[n] - self._xs[n-1] - self._xs[n-2]) 
+                               * (self._ys[n] - self._ys[n-1]) 
+                               )
+                        )
+                    ]
+                )
+
+                c = np.array(
+                    [
+                        (3 * (self._ys[i+1] - self._ys[i]) / (h[i] ** 2)
+                        - (b[i+1] + 2*b[i])/h[i])
+                        for i in range(n)
+                    ]
+                )
+
+                d = np.array(
+                    [
+                        (b[i+1] + b[i])/(h[i] ** 2)
+                        - 2*(self._ys[i+1] - self._ys[i])/(h[i] ** 3)
+                        for i in range(n)
+                    ]
+                )
+
+                result = (a[index] + b[index] * (x - self._xs[index])
+                        + c[index] * (x - self._xs[index])**2 
+                        + d[index] * (x - self._xs[index])**3
+                )
+        
+        return float(result)
+    
+if __name__ == "__main__":
+    x = [0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0]
+    y = np.sin(x)
+    cs = CubicSplineInterpolator(
+        x_values=x,
+        y_values=y,
+        extrapolate=True
+    )
+
+    y_approx = [cs(x) for x in np.linspace(0.0,10.0,20,endpoint=True)]
+
+
