@@ -25,7 +25,7 @@ extensions = [
     'myst_parser',
     #'sphinx-copybutton',
     #'sphinxext-rediraffe',
-    'sphinx-pyscript',
+    'sphinx_pyscript',
     #'sphinx-togglebutton',
 ]
 
