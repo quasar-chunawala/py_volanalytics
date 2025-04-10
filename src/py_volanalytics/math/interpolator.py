@@ -32,7 +32,7 @@ References:
 import numpy as np
 import datetime as dt
 from abc import ABC, abstractmethod
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum, StrEnum
 from typing import List, cast, Optional
 from attrs import define, field
 import matplotlib.pyplot as plt
@@ -42,6 +42,12 @@ plt.style.use('science')
 
 from py_volanalytics.types.var_types import NumericType
 
+class InterpolationType(StrEnum):
+    LINEAR_INTERPOLATION = "Linear Interpolation"
+    CUBIC_SPLINE_INTERPOLATION = "Cubic Spline Interpolation"
+    HERMITE_CUBIC_SPLINE_INTERPOLATION = "Hermite Cubic Spline Interpolation"
+
+    
 class ExtrapolateIndex(IntEnum):
     """
     Helper extrapolations enum.
@@ -326,3 +332,8 @@ if __name__ == "__main__":
     y_approx = [cs(x) for x in np.linspace(0.0,10.0,20,endpoint=True)]
 
 
+interpolator_map = {
+        InterpolationType.LINEAR_INTERPOLATION: LinearInterpolator,
+        InterpolationType.CUBIC_SPLINE_INTERPOLATION: CubicSplineInterpolator,
+        InterpolationType.HERMITE_CUBIC_SPLINE_INTERPOLATION: HermiteCubicSplineInterpolator,
+}

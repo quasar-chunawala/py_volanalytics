@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='py_volanalytics',
-    version='0.1.1',
+    version='0.1.2',
     package_dir={"":"src"},
     description="Vol-fitting methods and pricing-analytics for volatility derivatives",
     packages=find_packages(where="src"),

@@ -1,6 +1,6 @@
 [project]
 name = "py_volanalytics"
-version = "0.1.1"
+version = "0.1.2"
 description = "Vol-fitting methods and pricing-analytics for volatility derivatives"
 readme = "README.md"
 authors = [
@@ -20,6 +20,12 @@ dependencies = [
     "pip>=25.0.0",
     "twine>=6.1.0",
     "wheel>=0.45.1",
+    "pylint>=3.3.6",
+    "docformatter>=1.7.5",
+    "sphinx>=8.2.3",
+    "python-docs-theme>=2025.2",
+    "sphinx-rtd-theme>=3.0.2",
+    "furo>=2024.8.6",
 ]
 
 [project.urls]
