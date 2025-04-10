@@ -23,7 +23,6 @@ extensions = [
     'sphinx.ext.viewcode',  # Optional: Adds links to source code
     'sphinx.ext.mathjax',
     'myst_parser',
-    'sphinx-design',
     #'sphinx-copybutton',
     #'sphinxext-rediraffe',
     'sphinx-pyscript',
