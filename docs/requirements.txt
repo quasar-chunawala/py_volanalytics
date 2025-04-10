@@ -4,4 +4,6 @@ myst-parser==4.0.1
 sphinx-rtd-theme
 sphinx-copybutton
 sphinx-gallery
+sphinx-pyscript
+sphinx-design
 furo

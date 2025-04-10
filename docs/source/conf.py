@@ -22,6 +22,17 @@ extensions = [
     'sphinx.ext.napoleon',  # Optional: For Google/NumPy-style docstrings
     'sphinx.ext.viewcode',  # Optional: Adds links to source code
     'sphinx.ext.mathjax',
+    'myst_parser',
+    'sphinx-design',
+    #'sphinx-copybutton',
+    #'sphinxext-rediraffe',
+    'sphinx-pyscript',
+    #'sphinx-togglebutton',
+]
+
+myst_enable_extensions = [
+    "amsmath",  # Enables support for $$ math blocks
+    "dollarmath"  # Enables support for inline and block math using $ and $$
 ]
 
 templates_path = ['_templates']
