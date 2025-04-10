@@ -1,0 +1,7 @@
+sphinx==8.2.3
+sphinx_autodoc_typehints==1.19.5
+myst-parser==0.18.1
+sphinx-rtd-theme
+sphinx-copybutton
+sphinx-gallery
+furo
