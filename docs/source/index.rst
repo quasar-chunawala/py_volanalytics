@@ -37,11 +37,10 @@ The easiest way to install ``py_volanalytics`` is by using ``pip``:
    :maxdepth: 2
    :caption: Contents:
 
-   py_volanalytics
+   modules
 
-Indices and tables
-==================
+.. automodule:: py_volanalytics
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
