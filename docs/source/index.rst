@@ -36,7 +36,9 @@ The easiest way to install ``py_volanalytics`` is by using ``pip``:
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
+   short_rate_models
+   the_hjm_framework
    modules
 
 .. automodule:: py_volanalytics

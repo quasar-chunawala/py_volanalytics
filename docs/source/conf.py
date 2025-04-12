@@ -31,7 +31,15 @@ extensions = [
 
 myst_enable_extensions = [
     "amsmath",  # Enables support for $$ math blocks
-    "dollarmath"  # Enables support for inline and block math using $ and $$
+    "dollarmath",  # Enables support for inline and block math using $ and $$
+    "deflist",  # Enables definition lists
+]
+
+myst_number_code_blocks = [
+    "definition",
+    "theorem",
+    "lemma",
+    "example",
 ]
 
 templates_path = ['_templates']
