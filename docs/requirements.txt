@@ -6,3 +6,4 @@ sphinx-copybutton
 sphinx-gallery
 sphinx-pyscript
 furo
+py_volanalytics 
