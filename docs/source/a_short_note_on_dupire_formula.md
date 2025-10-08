@@ -1,0 +1,365 @@
+# A short note on Dupire Formula
+
+If the Black-Scholes model were good, the implied volatility $\hat{\sigma}$ parameter would be the same for all call option market prices. However, in reality, Black-Scholes implied volatility depends strongly on strike $K$, and maturity $T$. 
+
+In Dupire's 1993 paper, he proposes the following dynamics for the spot process:
+
+$$
+dS_t = r(t)S_t dt + \sigma_{LV}(t, S_t) S_t dW_t^{Q}
+$$ {#eq-local-volatility-model}
+
+where $\sigma_{LV}(t,S_t)$ is a deterministic function of the variables $(S_t,t)$.
+
+The function $\sigma_{LV}(t,s)$ such that the call option prices are given by the model in @eq-local-volatility-model coinicide with the market option prices $\hat{C}(K,T)$ is called **local volatility**.
+
+# Derivation of the Dupire PDE
+
+Recall, that the Fokker-Planck PDE describes the dynamics of the transition probability density forward in time. We represent the transition probability density function by $p(x,t)$. Were we to be more rigorous, we should write $p(x,t|x_0, t_0)$. The call option price has a similar representation. It is a function of strike $K$ and expiration $T$, given the current spot value $S_t$ and current time $t$. So, its a function $C(K,T | S_t, t)$; we can suppress the variables $(S_t, t)$ and write $C(K,T)$. This is standard terminology in the industry. 
+
+The call option payoff at maturity $T$ is given by:
+
+$$
+\begin{aligned}
+C(K,T|S_T,T) = (S_T - K)^{+}
+\end{aligned}
+$$
+
+We can't exactly apply Ito's formula, but there is the Tanaka-Meyer formula - an implication of which is that we can use Ito's lemma for the absolute value function and the maximum function.  
+
+$$
+\begin{aligned}
+d(S_T - K)^{+} &= \frac{\partial }{\partial S_T}(S_T - K)^{+}dS_T + \frac{1}{2}\frac{\partial^2}{\partial S_T^2} (S_T - K)^{+} dS_T^2 
+\end{aligned}
+$$
+
+We can write:
+
+$$
+\begin{align*}
+\frac{\partial}{\partial S_T}(S_T - K)^{+} = 1_{S_T > K} \frac{\partial}{\partial S_T} (S_T - K) = 1_{S_T > K}
+\end{align*}
+$$
+
+Now, we calculate the second derivative:
+
+$$
+\begin{align*}
+\frac{\partial}{\partial^2 S_T}(S_T - K)^{+} = \frac{\partial}{\partial S_T} 1_{S_T > K} = \delta(S_T - K)
+\end{align*}
+$$
+
+The indicator function goes from $0$ to $1$ at $K$, so the derivative at $K$ is $\infty$ and $0$ otherwise, and this is basically the definition of the Dirac-Delta function. Now, we can substitute these derivatives into the Tanaka formula and get:
+
+$$
+\begin{align*}
+d(S_T - K)^{+} &= 1_{S_T > K} dS_T + \frac{1}{2}\delta(S_T - K)dS_T^2 
+\end{align*}
+$$
+
+Next, let's calculate the partial derivatives of the payoff with respect to $K$. We have:
+
+$$
+\begin{align*}
+\frac{\partial}{\partial K}(S_T - K)^{+} = 1_{S_T > K} \frac{\partial}{\partial K} (S_T - K) = -1_{S_T > K}
+\end{align*}
+$$
+
+Differentiating this result again with respect to $K$:
+
+$$
+\begin{align*}
+\frac{\partial^2}{\partial K^2} (S_T - K)^{+} &= - \frac{\partial}{\partial K} 1_{S_T > K} \\
+&= -\frac{\partial}{\partial K}1_{S_T - K > 0} \\
+&= -\frac{\partial}{\partial K}H(S_T - K) 
+\end{align*}
+$$
+
+Define $y = (S_T - K)$. We have:
+
+$$
+\begin{align*}
+\frac{\partial^2}{\partial K^2} (S_T - K)^{+} &=  -\frac{\partial}{\partial K}H(S_T - K) \\
+&=-\frac{\partial H(y)}{\partial y}\cdot \frac{\partial y}{\partial K}\\
+&=-\delta(y)\frac{\partial}{\partial K}(S_T - K)\\
+&=\delta(S_T - K)
+\end{align*}
+$$
+
+Now, substituting for $dS_T$ and $dS_T^2$ in Ito's lemma, we have:
+
+$$
+\begin{align*}
+d(S_T - K)^{+} &= 1_{S_T > K}(rS_T dT + \sigma(S_T, T)S_TdW_T) + \frac{1}{2}\delta(S_T - K) \sigma(S_T,T)^2 S_T^2 dT\\
+&= \left(rS_T 1_{S_T > K} + \frac{1}{2}\delta(S_T - K)\sigma(S_T,T)^2 S_T^2 \right)dT + 1_{S_T > K} \sigma(S_T, T) S_T dW_T
+\end{align*}
+$$
+
+Taking expectations on both sides, the $dB_T$ becomes zero. So, we have:
+
+$$
+\begin{align*}
+\mathbb{E}^{\mathbb{Q}}\left[d(S_T - K)^{+}\right] =\mathbb{E}^{Q}\left[rS_T1_{S_T > K} + \frac{1}{2}\sigma(S_T,T)^2 S_T^2\right]dT
+\end{align*}
+$$
+
+We are left with just the $dT$ term. Now, we can shift $dT$ to the LHS (interchange expectation and the derivative) to get:
+
+$$
+\begin{align*}
+\frac{\partial}{\partial T}\mathbb{E}^{Q}\left[d(S_T - K)^{+}\right] &=\mathbb{E}^{Q}\left[rS_T1_{S_T > K} + \frac{1}{2}\sigma(S_T,T)^2 S_T^2\right]\\
+&= rS_T \mathbb{E}^{Q}\left[1_{S_T > K}\right] + \frac{1}{2}\mathbb{E}^{Q}\left[\sigma(S_T,T)^2 S_T^2\right]
+\end{align*}
+$$
+
+Let's try to express the first term on the RHS by the call option price. We can write the payoff as:
+
+$$
+\begin{align*}
+(S_T - K)1_{S_T > K}  = S_T 1_{S_T > K} - K 1_{S_T > K}
+\end{align*}
+$$
+
+Now, we can rearrange the terms to get what we want:
+
+$$
+\begin{align*}
+S_T1_{S_T > K} = (S_T - K) 1_{S_T > K} + K1_{S_T > K}
+\end{align*}
+$$
+
+We now take expectation on both sides, so we get:
+
+$$
+\begin{align*}
+\mathbb{E}^Q[S_T 1_{S_T > K}] &= \mathbb{E}^{Q}[(S_T - K)1_{S_T > K}] + K\mathbb{E}^{Q}[1_{S_T > K}]
+\end{align*}
+$$
+
+Recall that:
+
+$$
+\begin{align*}
+C_{K,T} &= e^{-rT} \mathbb{E}^{Q}[(S_T - K)1_{S_T > K}] \\
+\implies e^{rT} C(K,T) &= \mathbb{E}^{Q}[(S_T - K)1_{S_T > K}] 
+\end{align*}
+$$
+
+So, our first expression is then the undiscounted value of the call option. Now, the second expression has got the indicator or the heavyside function, which we know is the derivative of the payoff. Let's reproduce the risk-neutral valuation formula. 
+
+$$
+\begin{align*}
+\frac{\partial}{\partial K} C_{K,T} &= e^{-rT} \mathbb{E}^{Q}\left[\frac{\partial}{\partial K} (S_T - K)^{+}\right]\\
+&= - e^{-rT} \mathbb{E}^{Q}[1_{S_T > K}]
+\end{align*}
+$$ {#eq-first-derivative-wrt-strike}
+
+So, we can replace the second expectation term $\mathbb{E}^{Q}[1_{S_T > K}]$ by $-e^{rT}\frac{\partial C_{K,T}}{\partial K}$. So, we have:
+
+$$
+\begin{align*}
+\mathbb{E}^Q[S_T 1_{S_T > K}] &= e^{rT}C(K,T) - Ke^{rT}\frac{\partial C}{\partial K} 
+\end{align*}
+$$
+
+Let's move to the second expectation term:
+
+$$
+\begin{align*}
+\frac{\partial}{\partial T}\mathbb{E}^{Q}\left[d(S_T - K)^{+}\right] &= re^{rT}C(K,T) - rKe^{rT}\frac{\partial C}{\partial K} + \frac{1}{2}\mathbb{E}^Q\left[\sigma(T,S_T)^2 S_T^2 \delta(S_T - K)\right]
+\end{align*}
+$$ {#eq-primary-expression-2}
+
+We know that:
+
+$$
+\begin{align*}
+\mathbb{E}[X | Y=y_0] &= \int_{-\infty}^{\infty} x f_{X|Y=y_0}(x) dx\\
+&=\int_{\mathbb{R}} x \frac{f_{X,Y}(x,y_0)}{f_Y(y_0)} dx\\
+&= \int_{\mathbb{R}} x \frac{\int_{\mathbb{R}}1_{Y=y_0}f_{X,Y}(x,y)dy}{f_Y(y_0)} dx\\
+&= \frac{\int\int_{\mathbb{R}^2}xf_{X,Y}(x,y)\cdot 1_{Y=y_0}dx dy}{\int_{R}f_{X,Y}(x,y_0) dx}\\
+&= \frac{\int\int_{\mathbb{R}^2}xf_{X,Y}(x,y)\cdot 1_{Y=y_0}dx \cdot dy}{\int \int_{\mathbb{R}^2}1_{Y=y_0} \cdot f_{X,Y}(x,y) dx \cdot dy}\\
+&= \frac{\mathbb{E}[X\cdot 1_{Y=y_0}]}{\mathbb{E}[1_{Y=y_0}]}
+\end{align*}
+$$
+
+So, 
+
+$$
+\mathbb{E}[X | Y=y_0] \cdot \mathbb{E}[1_{Y=y_0}] = \mathbb{E}[X\cdot 1_{Y=y_0}]
+$$
+
+Using this result, we may write:
+
+$$
+\begin{align*}
+\mathbb{E}^Q [\sigma(T,S_T)^2 S_T^2 \delta(S_T - K)] &= \mathbb{E}^Q[\sigma(T,S_T)^2 S_T^2 | S_T = K] \cdot \mathbb{E}^Q[\delta(S_T - K)]\\
+&= K^2 \mathbb{E}^Q[\sigma(T,S_T)^2 | S_T = K]  \cdot \mathbb{E}^Q[\delta(S_T - K)]
+\end{align*}
+$$ {#eq-intermediate-result-1}
+
+Now, taking the second derivative of the call option price with respect to the strike $K$, we have:
+
+$$
+\begin{align*}
+C_{K,T} &= e^{-rT}\mathbb{E}^Q[(S_T - K)^{+}]\\
+\frac{\partial^2 C}{\partial K^2}  &= e^{-rT}\mathbb{E}^Q\left[\frac{\partial^2}{\partial K^2} (S_T - K)^{+}\right]\\
+&= e^{-rT} \mathbb{E}^Q[\delta(S_T - K)]\\
+e^{rT}\frac{\partial^2 C_{K,T}}{\partial K^2} &= \mathbb{E}^Q[\delta(S_T - K)]
+\end{align*}
+$$ {#eq-second-derivative-wrt-strike}
+
+So, the second expression in the RHS of @eq-intermediate-result-1 becomes:
+
+$$
+\begin{align*}
+\mathbb{E}^Q [\sigma(T,S_T)^2 S_T^2 \delta(S_T - K)]  &= K^2 \mathbb{E}^Q[\sigma(T,S_T)^2 | S_T = K]  \cdot \mathbb{E}^Q[\delta(S_T - K)] \\
+&= K^2 \mathbb{E}^Q[\sigma(T,S_T)^2 | S_T = K]  \cdot e^{rT} \frac{\partial^2 C}{\partial K^2} 
+\end{align*}
+$$
+
+So, our primary expression in @eq-primary-expression-2 becomes:
+
+$$
+\begin{align*}
+\frac{\partial}{\partial T}\mathbb{E}^Q[(S_T - K)^+] &= re^{rT} C(K,T) - rKe^{rT} \frac{\partial C}{\partial K} \\&+ \frac{1}{2}K^2 \mathbb{E}^Q[\sigma(T,S_T)^2 | S_T = K]  \cdot e^{rT} \frac{\partial^2 C}{\partial K^2} 
+\end{align*}
+$$ {#eq-time-derivative}
+
+Let $C^u(K,T|S,t)$ denote the undiscounted call option price. Since $C^u(K,T|S,t) = \mathbb{E}^Q[(S_T - K)^{+}]$, we can write the above PDE as:
+
+$$
+\begin{align*}
+\frac{\partial C^u_{K,T}}{\partial T}&= rC^u_{K,T} - rK \frac{\partial C^u_{K,T}}{\partial K} \\&+ \frac{1}{2}K^2 \mathbb{E}^Q[\sigma(T,S_T)^2 | S_T = K]  \cdot \frac{\partial^2 C^u_{K,T}}{\partial K^2} 
+\end{align*}
+$$
+
+Rearranging we have:
+
+$$
+\begin{align*}
+\mathbb{E}^Q[\sigma(T, S_T)^2 | S_T = K] 
+= \frac{\frac{\partial C^u_{K,T}}{\partial T} + rK\frac{\partial C^u_{K,T}}{\partial K} - rC^u_{K,T}}{\frac{1}{2}K^2 \frac{\partial^2 C^u_{K,T}}{\partial K^2}}
+\end{align*}
+$$ {#eq-dupire-formula-in-terms-of-undiscounted-call-option-price-1}
+
+$\sigma(S_T, T)$ is the instantaneous variance at $(S_T,T)$. We can write it's conditional expectation as a function of the variables $(K,T)$, since it is an integral over the state space of $S_T$, so $S_T$ is integrated out and we will have a function of $K$ for each $T$.
+
+$$
+\mathbb{E}^Q[\sigma(T, S_T)^2 | S_T = K] \stackrel{def}{=} \sigma_{LV}^2(K,T) = \int_{-\infty}^{\infty} \sigma(s,T)^2 f_{S_T|S_T = K}(s) ds
+$$
+
+So, we have:
+
+$$
+\boxed{
+    \sigma_{LV}^2(K,T) = \frac{\frac{\partial C^u_{K,T}}{\partial T} + rK\frac{\partial C^u_{K,T}}{\partial K} - rC^u_{K,T}}{\frac{1}{2}K^2 \frac{\partial^2 C^u_{K,T}}{\partial K^2}}
+}
+$$ {#eq-dupire-formula-in-terms-of-undiscounted-call-option-price}
+
+We can also relabel the parameters to define the function in terms of time $t$ and stock price $S$:
+
+$$
+\boxed{
+    \mathbb{E}^Q[\sigma(t, S)^2 | S_t = S] = \sigma_{LV}^2(K,T) |_{K=S, T=t} =\left.\frac{\frac{\partial C^u_{K,T}}{\partial T} + rK\frac{\partial C^u_{K,T}}{\partial K} - rC^u_{K,T}}{\frac{1}{2}K^2 \frac{\partial^2 C^u_{K,T}}{\partial K^2}}\right\vert_{K=S,T=t}
+}
+$$ {#eq-dupire-formula-in-time-and-stock-price-terms}
+
+## Digression - Breeden-Litzenberger Formula
+
+Assume that $(S_t,t\geq 0)$ is a markov process with the density $p(t,s,T,S_T)$ conditioned on $S_t = s$. Then:
+
+$$
+\begin{align*}
+C(s,t,T,K) &= e^{-r(T-t)}\int_0^\infty p(t,s,T,S_T) (S_T - K)^{+} dS_T \\
+&=  e^{-r(T-t)}\int_K^\infty p(t,s,T,y) (y - K) dy \\
+\end{align*}
+$$
+
+Differentiating with respect to $K$, we have:
+
+$$
+\begin{align*}
+\frac{\partial C}{\partial K} &= e^{-r(T-t)}\left[\left.p(t,s,T,y) (y - K)\right\vert_{y=\infty} - \left.p(t,s,T,y) (y - K)\right\vert_{y=K} + \int_{K}^\infty p(t,s,T,y) \frac{\partial}{\partial K}(y-k)dy\right] \\
+&= -e^{-r(T-t)} \int_{K}^\infty p(t,s,T,y) dy
+\end{align*}
+$$
+
+Differentiating again with respect to $K$ and applying the Leibnitz rule:
+
+$$
+\begin{align*}
+\frac{\partial^2 C}{\partial K^2} &= - e^{-r(T-t} [ p(t,s,T,y)|y=\infty -  p(t,s,T,y)|y=K]\\
+&= e^{-r(T-t)}p(t,s,T,K)
+\end{align*}
+$$
+
+Finally, we have:
+
+$$
+\boxed{\frac{\partial^2 C}{\partial K^2} = e^{-r(T-t)}p(t,s,T,K)}
+$$ {#eq-breeden-litzenberger-formula}
+
+
+[Breeden & Litzenberger(1978)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2642349), showed that this second-order partial derivative can be used to approximate the option-implied risk-neutral probability that the underlying asset price $S$ will be equal to the strike $K$ at maturity.
+
+## No-arbitrage conditions
+
+The volatility surface, or equivalently the Call prices surface cannot have any arbitrary shape. Peter Carr has shown that static arbitrage is avoided in a set of option prices, if the calendar spread and butterfly spread arbitrages are avoided.
+
+### Calendar spread condition
+
+Calendar spread arbitrage is usually expressed as the monotonicity of the European call option prices $C$ with respect to the maturity $T$. 
+
+::: {#prp-calendar-spread}
+
+### Calendar Arbitrage
+
+Define forward-moneyness $k \stackrel{def}{=} K/F(t,T)$, where the forward price is given by $F(t,T) = S_t e^{\int_t^T r(u)du}$ and total variance as $\nu^2(k,\tau) = \hat{\sigma}^2(k,\tau)\tau$.
+
+If $\nu^2(k,\tau_i)$ is a strictly increasing function of $\tau_i = T_i - t$, $i=1,2$, there is no calendar arbitrage.
+:::
+
+*Proof.*
+
+Given two expiry dates $t < T_1 < T_2$, construct in $t$, the following calendar spread in two calls with the same forward-moneyness: a long position in a call $C_t(K_2, T_2)$ and a short position in $C_t(K_1,T_1)$ call. The forward-moneyness requirement implies that:
+
+$$
+\begin{align*}
+\frac{K_1}{F(t,T_1)} &= \frac{K_2}{F(t,T_2)}\\
+K_1 &= e^{-\int_{T_1}^{T_2}r(u)du} K_2
+\end{align*}
+$$ {#eq-forward-moneyness-condition}
+
+In $T_1$, if $S_{T_1} \leq K_1$ the short option position struck at $K_1$ expires worthless while $C_{T_1}(K_2,T_2)\geq 0$, because it still has some time-value of money. Otherwise, the entire portfolio is worth $C_{T_1}(K_2,T_2) - (S_{T_1} - K_1)$. But, @eq-forward-moneyness-condition implies that the portfolio is worth $C_{T_1}(K_2,T_2) -  (S_{T_1} - K_2 e^{-\int_{T_1}^{T_2} r(u) du})$ which equals $P_{T_1}(K_2,T_2)$ by put-call parity. Thus, the payoff of this portfolio is always non-negative. 
+
+In order to preclude arbitrage, at time $t \leq T_1 < T_2$ we must have:
+
+$$
+\begin{align*}
+C_t(K_2,T_2) - C_t(K_1,T_1) &> 0\\
+C_t(K_2,T_2) &> C_t(K_1,T_1)
+\end{align*}
+$$ 
+
+Multiplying by $e^{\int_0^{T_2} r_u du}$ and dividing by $K_2$ yields:
+
+$$
+\begin{align*}
+\frac{e^{\int_0^{T_2} r_u du}C_t(K_2,T_2)}{K_2} &> \frac{e^{\int_0^{T_2} r_u du}C_t(K_1,T_1)}{K_2}\\
+&= \frac{e^{\int_0^{T_2} r_u du}C_t(K_1,T_1)}{K_1 e^{\int_{T_1}^{T_2}r_u du}K_1}\\
+\end{align*}
+$$
+
+So, we have the condition:
+
+$$
+\begin{align*}
+\boxed{\frac{e^{\int_0^{T_2} r_u du}C_t(K_2,T_2)}{K_2} >  \frac{e^{\int_0^{T_1} r_u du}C_t(K_1,T_1)}{K_1}}
+\end{align*}
+$$
+
+Finally, we observe that 
+
+## References
+
+- [A note sufficient conditions for no arbitrage](https://engineering.nyu.edu/sites/default/files/2018-09/CarrFinResearchLetters2005.pdf), *Peter Carr and Dilip Madan*

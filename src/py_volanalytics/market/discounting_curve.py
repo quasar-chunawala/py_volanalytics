@@ -18,15 +18,30 @@ import scienceplots
 import attrs
 from attrs import define, field
 from typing import Union
-
+from py_volanalytics.types.enums import Currency
+from py_volanalytics.valuation_framework.market_data import MarketObject
 from py_volanalytics.math.interpolator import Interpolator, LinearInterpolator, CubicSplineInterpolator, HermiteCubicSplineInterpolator, InterpolationType, interpolator_map
 
 plt.style.use('science')
 
 @define(kw_only=True)
-class DiscountingCurve:
-    """ Class to represent a discounting curve object. """
+class DiscountingCurveId:
+    """ Class to represent a Discounting Curve identifier """
+    _currency : Currency = field(default=Currency.USD, validator=attrs.validators.instance_of(Currency))
+    _collateral : Currency = field(default=Currency.USD, validator=attrs.validators.instance_of(Currency))
+    
+    @property
+    def currency(self):
+        return self._currency
+    
+    @property
+    def collateral(self):
+        return self._collateral
 
+@define(kw_only=True)
+class DiscountingCurve(MarketObject):
+    """ Class to represent a discounting curve object. """
+    _id : DiscountingCurveId = field(validator=attrs.validators.instance_of(DiscountingCurveId))
     _times : np.ndarray[Union[dt.date, float]] = field()
     _discount_factors : np.ndarray[float] = field()
     _interpolation_type : InterpolationType = field(default=InterpolationType.LINEAR_INTERPOLATION, 
