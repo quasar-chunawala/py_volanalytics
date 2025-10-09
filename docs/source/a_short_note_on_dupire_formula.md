@@ -1,5 +1,6 @@
 # A short note on Dupire Formula
 
+
 If the Black-Scholes model were good, the implied volatility $\hat{\sigma}$ parameter would be the same for all call option market prices. However, in reality, Black-Scholes implied volatility depends strongly on strike $K$, and maturity $T$. 
 
 In Dupire's 1993 paper, he proposes the following dynamics for the spot process:
@@ -308,7 +309,7 @@ The volatility surface, or equivalently the Call prices surface cannot have any 
 
 ### Calendar spread condition
 
-Calendar spread arbitrage is usually expressed as the monotonicity of the European call option prices $C$ with respect to the maturity $T$. 
+Calendar spread arbitrage is usually expressed as the monotonicity of the European call option prices $C$ with respect to the maturity $T$. I closely follow the derivation in [Fengler(2005)](https://core.ac.uk/reader/6978470).
 
 ::: {#prp-calendar-spread}
 
@@ -356,9 +357,63 @@ $$
 \begin{align*}
 \boxed{\frac{e^{\int_0^{T_2} r_u du}C_t(K_2,T_2)}{K_2} >  \frac{e^{\int_0^{T_1} r_u du}C_t(K_1,T_1)}{K_1}}
 \end{align*}
+$$ {#eq-undiscounted-call-option-price-scaled-by-strike}
+
+Finally, we observe that the function:
+
+$$
+\begin{align*}
+f(k,\nu^2) &\stackrel{def}{=} \frac{e^{\int_{0}^T r_u du}C_t^{BS}(K,T)}{K}\\
+&= \frac{F(0,T)\Phi(d_{+})}{K} - \Phi(d_{-})\\
+&= k^{-1}\Phi(d_{+}) - \Phi(d_{-})
+\end{align*}
 $$
 
-Finally, we observe that 
+is a function in $k$ and $\nu^2$ only, and, for a fixed $k$, is a strictly monotone increasing function in $\nu^2$, since 
+
+$$
+\begin{align*}
+d_{\pm} &= \frac{\ln(\frac{1}{k})\pm \frac{\nu^2}{2}}{\sqrt{\nu^2}}\\
+\frac{\partial d_{+}}{\partial \nu^2} &=\frac{\sqrt{\nu^2} \cdot \frac{1}{2} - \left(-\ln k + \frac{\nu^2}{2}\right)\cdot \frac{1}{2\sqrt{\nu^2}}}{\nu^2}\\
+&= \frac{\frac{\sqrt{\nu^2}}{2} - \frac{d_{+}}{2}}{\nu^2}\\
+\frac{\partial d_{-}}{\partial \nu^2} &= \frac{-\frac{\sqrt{\nu^2}}{2} - \frac{d_{-}}{2}}{\nu^2}\\
+\frac{\partial d_{+}}{\partial \nu^2} - \frac{\partial d_{-}}{\partial \nu^2} &= \frac{1}{2\sqrt{\nu^2}}
+\end{align*}
+$$
+
+Also observe that:
+
+$$
+\begin{align*}
+\frac{\phi(d_{+})}{\phi(d_{-})} &= \exp\left[-\frac{1}{2}(d_{+}^2 - d_{-}^2)\right]\\
+&= \exp\left[-\frac{1}{2}(d_{+} + d_{-})(d_{+} - d_{-})\right]\\
+&= \exp\left[-\frac{1}{2}\left(\frac{-\ln k + \nu^2/2}{\sqrt{\nu^2}} + \frac{-\ln k - \nu^2/2}{\sqrt{\nu^2}}\right)\left(\frac{-\ln k + \nu^2/2}{\sqrt{\nu^2}} - \frac{-\ln k - \nu^2/2}{\sqrt{\nu^2}}\right)\right]\\
+&= \exp\left[\left(\frac{\ln k}{\sqrt{\nu^2}}\right)\sqrt{\nu^2}\right]\\
+&= k
+\end{align*}
+$$
+
+So, $\phi(d_{+}) = k \phi(d_{-})$. Also, recall that $d_{+} = d_{-} + \sqrt{\nu^2}$. Putting it all together, we have:
+
+$$
+\begin{align*}
+\frac{\partial f}{\partial \nu^2} &= k^{-1}\phi(d_{+}) (\partial d_{+}/\partial \nu^2) - \phi(d_{-})(\partial d_{-}/\partial \nu^2) \\
+&= \phi(d_{-}) \cdot \left(\frac{\partial d_{+}}{\partial \nu^2} - \frac{\partial d_{-}}{\partial \nu^2}\right)\\
+&= \phi(d_{-})\frac{1}{2\sqrt{\nu^2}} > 0, \quad \forall \nu^2 \in (0,\infty)
+\end{align*}
+$$
+
+We conclude that $f$ is strictly monotonically increasing in $\nu^2$. So, if total variance $\nu^2 = \sigma^2(k,\tau)$ is increasing, $f(k,\nu^2)$, that is the undiscounted call option price scaled by the strike price $K$ is increasing and from @eq-undiscounted-call-option-price-scaled-by-strike, it follows that there is no calendar arbitrage. $\blacksquare$
+
+### Butterfly spread arbitrage
+
+We can write:
+
+$$
+\begin{align*}
+\frac{\partial^C}{\partial K^2} = \lim_{\epsilon \to 0} \frac{C(K-\epsilon,T) - 2C(K,T) + C(K+\epsilon, T)}{\epsilon^2}
+\end{align*}
+$$
 
 ## References
 

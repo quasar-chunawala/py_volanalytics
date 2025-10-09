@@ -14,50 +14,66 @@ where :math:`M(t)` is any adapted process. Such an asset is said to be a risk-fr
 import datetime as dt
 import numpy as np
 import matplotlib.pyplot as plt
-import scienceplots
+
 import attrs
 from attrs import define, field
 from typing import Union
 from py_volanalytics.types.enums import Currency
-from py_volanalytics.valuation_framework.market_data import MarketObject
-from py_volanalytics.math.interpolator import Interpolator, LinearInterpolator, CubicSplineInterpolator, HermiteCubicSplineInterpolator, InterpolationType, interpolator_map
+from py_volanalytics.valuation_framework.market_data import MarketObjectId, MarketObject
+from py_volanalytics.math.interpolator import InterpolationType, interpolator_map
 
-plt.style.use('science')
+plt.style.use("science")
+
 
 @define(kw_only=True)
-class DiscountingCurveId:
-    """ Class to represent a Discounting Curve identifier """
-    _currency : Currency = field(default=Currency.USD, validator=attrs.validators.instance_of(Currency))
-    _collateral : Currency = field(default=Currency.USD, validator=attrs.validators.instance_of(Currency))
-    
+class DiscountingCurveId(MarketObjectId):
+    """Class to represent a Discounting Curve identifier"""
+
+    _currency: Currency = field(
+        default=Currency.USD, validator=attrs.validators.instance_of(Currency)
+    )
+    _collateral: Currency = field(
+        default=Currency.USD, validator=attrs.validators.instance_of(Currency)
+    )
+
     @property
     def currency(self):
         return self._currency
-    
+
     @property
     def collateral(self):
         return self._collateral
 
+
 @define(kw_only=True)
 class DiscountingCurve(MarketObject):
-    """ Class to represent a discounting curve object. """
-    _id : DiscountingCurveId = field(validator=attrs.validators.instance_of(DiscountingCurveId))
-    _times : np.ndarray[Union[dt.date, float]] = field()
-    _discount_factors : np.ndarray[float] = field()
-    _interpolation_type : InterpolationType = field(default=InterpolationType.LINEAR_INTERPOLATION, 
-                                         validator=attrs.validators.instance_of(InterpolationType))
+    """Class to represent a discounting curve object."""
+
+    _id: DiscountingCurveId = field(
+        validator=attrs.validators.instance_of(DiscountingCurveId)
+    )
+    _times: np.ndarray[Union[dt.date, float]] = field()
+    _discount_factors: np.ndarray[float] = field()
+    _interpolation_type: InterpolationType = field(
+        default=InterpolationType.LINEAR_INTERPOLATION,
+        validator=attrs.validators.instance_of(InterpolationType),
+    )
+
+    def get_market_object_id(self) -> DiscountingCurveId:
+        """Return the DiscountCurveId"""
+        return self._id
 
     @_times.validator
     def validate_times(self, attributes, values):
-        """ Validate array of times. """
+        """Validate array of times."""
         if not values:
             raise ValueError("array of time values is empty.")
         if len(values) == 1:
             raise ValueError("array of time values must be of length >= 2")
-        
+
         if not isinstance(self._times, np.ndarray[Union[dt.date, float]]):
             raise ValueError("times must be dates or float array")
-        
+
         zero_point = dt.timedelta(0) if isinstance(values[0], dt.date) else 0
         for i in range(len(values) - 1):
             if values[i + 1] - values[i] < zero_point:
@@ -65,11 +81,13 @@ class DiscountingCurve(MarketObject):
 
     def __attrs_post_init__(self):
         if len(self._discount_factors) != len(self._times):
-            raise ValueError("length of _discount_factors array must equal length of _times array")
-        
-        if not isinstance(self._discount_factors, np.ndarray[float]):\
+            raise ValueError(
+                "length of _discount_factors array must equal length of _times array"
+            )
+
+        if not isinstance(self._discount_factors, np.ndarray[float]):
             raise ValueError("_discount_factors must be of type float array")
-        
+
         # Get the interpolator class based on the interpolation type
         interpolator_class = interpolator_map.get(self._interpolation_type)
 
@@ -79,7 +97,7 @@ class DiscountingCurve(MarketObject):
         # Initialize the interpolator
         self._interpolator = interpolator_class(self._times, self._discount_factors)
 
-    def zero(self, t : float, T: float) -> float:
+    def zero(self, t: float, T: float) -> float:
         disc_fact_t = self._interpolator(t)
         disc_fact_T = self._interpolator(T)
 

@@ -1,6 +1,7 @@
-""" This module contains globally accessible enums """
+"""This module contains globally accessible enums"""
 
 from enum import Enum, StrEnum, IntEnum, auto
+
 
 class OptionType(Enum):
     """The type of option contract."""
@@ -8,33 +9,41 @@ class OptionType(Enum):
     CALL_OPTION = auto()
     PUT_OPTION = auto()
 
+
 class Moneyness(Enum):
-    """ The moneyness of an option in Delta-convention """
+    """The moneyness of an option in Delta-convention"""
+
     TEN_DELTA_CALL = auto()
     TWENTY_FIVE_DELTA_CALL = auto()
     ATM = auto()
     TWENTY_FIVE_DELTA_PUT = auto()
     TEN_DELTA_PUT = auto()
 
+
 class ExerciseStyle(Enum):
-    """ The exercise style of an option"""
+    """The exercise style of an option"""
+
     EUROPEAN = auto()
     AMERICAN = auto()
     BERMUDAN = auto()
-    
+
+
 class OptionQuoteConvention(Enum):
-    """ The exercise style of an option"""
+    """The exercise style of an option"""
+
     IMPLIED_VOLATILITY = auto()
     PRICE = auto()
-    
+
+
 class StrikeConvention(Enum):
-    """ The strike convention for an option """
+    """The strike convention for an option"""
+
     SIMPLE = auto()
     DELTA = auto()
     FORWARD_MONEYNESS = auto()
-    LOG_FORWARD_MONEYNESS = auto() 
-    
-    
+    LOG_FORWARD_MONEYNESS = auto()
+
+
 class Currency(StrEnum):
     AED = "AED"
     ARS = "ARS"
@@ -91,9 +100,31 @@ class Currency(StrEnum):
     XPT = "XPT"
     XXX = "XXX"
     ZAR = "ZAR"
-    
+
+
 class MarketDataServiceId(Enum):
-    """ A list of all market data service ids """
-    DISCOUNTING_CURVE = auto()
-    DEFAULT_CURVE = auto()
-    VOLATILITY_SURFACE = auto()
+    """A list of all market data service ids"""
+
+    DISCOUNTING_CURVE_SERVICE = auto()
+    DEFAULT_CURVE_SERVICE = auto()
+    IMPLIED_VOLATILITY_SURFACE_SERVICE = auto()
+    TIME_SERVICE = auto()
+    LOCAL_VOLATILITY_SURFACE_SERVICE = auto()
+
+
+class GMOBState(Enum):
+    """Various possible states for a MOB"""
+
+    CREATED = auto()
+    INITIALIZED = auto()
+    REF_DATA_DISCOVERY_COMPLETE = auto()
+    MARKET_DATA_DISCOVERY_COMPLETE = auto()
+    EXECUTION_COMPLETE = auto()
+    RESULTS_GEN_COMPLETE = auto()
+
+
+class TimeInfo(Enum):
+    """Info about a TimeObject"""
+
+    PV_DATE = auto()
+    TODAY = auto()

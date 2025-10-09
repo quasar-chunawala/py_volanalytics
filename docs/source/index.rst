@@ -11,7 +11,6 @@
 Currently, *py_volanalytics* supports the following features:
 
 
-
 Installation
 ============
 The easiest way to install ``py_volanalytics`` is by using ``pip``:
@@ -28,7 +27,7 @@ The easiest way to install ``py_volanalytics`` is by using ``pip``:
    pip install git+https://github.com/quasar-chunawala/py_volanalytics
 
    # to clone and install from a local copy
-   git clone https://github.com/quasar-chunawala/py_volanlyticss.git
+   git clone https://github.com/quasar-chunawala/py_volanlytics.git
    cd py_volanalytics
    pip install -e .
 
@@ -38,7 +37,7 @@ The easiest way to install ``py_volanalytics`` is by using ``pip``:
    :caption: Contents:
    
    short_rate_models
-   the_hjm_framework
+   a_short_note_on_dupire_formula
    modules
 
 .. automodule:: py_volanalytics

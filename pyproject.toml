@@ -1,7 +1,7 @@
 [project]
 name = "py_volanalytics"
-version = "0.1.2"
-description = "Vol-fitting methods and pricing-analytics for volatility derivatives"
+version = "0.1.3"
+description = "Vol-smootheners, algorithms and arb-free and almost arb-free vol modelling analytics"
 readme = "README.md"
 authors = [
     { name = "quasar-chunawala", email = "quasar.chunawala@gmail.com" }
@@ -9,23 +9,23 @@ authors = [
 requires-python = ">=3.12"
 
 dependencies = [
-    "aleatory>=1.0.1",
-    "attrs>=25.3.0",
-    "ipykernel>=6.29.5",
+    "aleatory>=1.1.1",
+    "attrs>=25.4.0",
+    "ipykernel>=6.30.1",
     "latex>=0.7.0",
-    "numpy>=2.2.4",
+    "numpy>=2.3.3",
     "scienceplots>=2.1.1",
-    "matplotlib>=3.10.1",
-    "setuptools>=77.0.3",
-    "pip>=25.0.0",
-    "twine>=6.1.0",
+    "matplotlib>=3.10.6",
+    "setuptools>=80.9.0",
+    "pip>=25.2",
+    "twine>=6.2.0",
     "wheel>=0.45.1",
-    "pylint>=3.3.6",
-    "docformatter>=1.7.5",
+    "pylint>=3.3.9",
+    "docformatter>=1.7.7",
     "sphinx>=8.2.3",
-    "python-docs-theme>=2025.2",
+    "python-docs-theme>=2025.9.2",
     "sphinx-rtd-theme>=3.0.2",
-    "furo>=2024.8.6",
+    "furo>=2025.9.25",
     "myst-parser>=4.0.1",
     "sphinx-pyscript>=0.1.0",
 ]
