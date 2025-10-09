@@ -24,7 +24,7 @@ conda install -c conda-forge py_volanalytics
 pip install git+https://github.com/quasar-chunawala/py_volanalytics
 
 # to clone and install from a local copy
-git clone https://github.com/quasar-chunawala/py_volanlyticss.git
+git clone https://github.com/quasar-chunawala/py_volanlytics.git
 cd py_volanalytics
 pip install -e .
 ```
