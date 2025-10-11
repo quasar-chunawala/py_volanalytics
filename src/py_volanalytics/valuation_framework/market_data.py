@@ -44,7 +44,7 @@ class MarketDataService:
     _id: MarketDataServiceId = field(
         alias="id", validator=attrs.validators.instance_of(MarketDataServiceId)
     )
-    _market_data_dict: dict= field(alias="market_data_dict")
+    _market_data_dict: dict = field(alias="market_data_dict")
 
     def get_keys(self):
         """Get all market data keys inside this service"""
@@ -95,7 +95,7 @@ class MarketEnvironment:
     """Class representing a collection of Market data services"""
 
     _market_data_services: dict[MarketDataServiceId, MarketDataService] = field(
-        validator=attrs.validators.instance_of(dict[Any, MarketDataService]),
+        validator=attrs.validators.instance_of(dict),
         alias="market_data_services",
     )
 
