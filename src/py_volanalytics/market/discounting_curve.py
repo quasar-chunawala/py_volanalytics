@@ -1,14 +1,8 @@
 """Discounting Curve.
 
-The ``DiscountingCurve`` object stores a vector of dates(times) and discount factors. We want to value all instruments consistently within a single valuation framework. For this we need a risk-free discounting curve. We establish a few important results:
+The ``DiscountingCurve`` object stores a vector of dates(times) and discount factors.
+This allows us to value all instruments consistently within a single valuation framework.
 
-**Risk-free asset**. Consider an asset with the price process :math:`M(t)` which has the dynamics:
-
-.. math::
-
-    dM(t) = r(t) M(t) dt
-
-where :math:`M(t)` is any adapted process. Such an asset is said to be a risk-free asset.
 """
 
 import datetime as dt
@@ -17,9 +11,13 @@ import matplotlib.pyplot as plt
 
 import attrs
 from attrs import define, field
-from typing import Union
+from typing import Union, Optional
 from py_volanalytics.types.enums import Currency
-from py_volanalytics.valuation_framework.market_data import MarketObjectId, MarketObject
+from py_volanalytics.valuation_framework.market_data import (
+    MarketObjectId,
+    MarketObject,
+    MarketObjects,
+)
 from py_volanalytics.math.interpolator import InterpolationType, interpolator_map
 
 plt.style.use("science")
@@ -30,10 +28,14 @@ class DiscountingCurveId(MarketObjectId):
     """Class to represent a Discounting Curve identifier"""
 
     _currency: Currency = field(
-        default=Currency.USD, validator=attrs.validators.instance_of(Currency)
+        default=Currency.USD,
+        validator=attrs.validators.instance_of(Currency),
+        alias="currency",
     )
     _collateral: Currency = field(
-        default=Currency.USD, validator=attrs.validators.instance_of(Currency)
+        default=Currency.USD,
+        validator=attrs.validators.instance_of(Currency),
+        alias="collateral",
     )
 
     @property
@@ -49,19 +51,13 @@ class DiscountingCurveId(MarketObjectId):
 class DiscountingCurve(MarketObject):
     """Class to represent a discounting curve object."""
 
-    _id: DiscountingCurveId = field(
-        validator=attrs.validators.instance_of(DiscountingCurveId)
-    )
-    _times: np.ndarray[Union[dt.date, float]] = field()
-    _discount_factors: np.ndarray[float] = field()
+    _times: np.ndarray[Union[dt.date, float]] = field(alias="times")
+    _discount_factors: np.ndarray[float] = field(alias="discount_factors")
     _interpolation_type: InterpolationType = field(
         default=InterpolationType.LINEAR_INTERPOLATION,
         validator=attrs.validators.instance_of(InterpolationType),
+        alias="interapolation_type",
     )
-
-    def get_market_object_id(self) -> DiscountingCurveId:
-        """Return the DiscountCurveId"""
-        return self._id
 
     @_times.validator
     def validate_times(self, attributes, values):
@@ -97,10 +93,39 @@ class DiscountingCurve(MarketObject):
         # Initialize the interpolator
         self._interpolator = interpolator_class(self._times, self._discount_factors)
 
-    def zero(self, t: float, T: float) -> float:
-        disc_fact_t = self._interpolator(t)
-        disc_fact_T = self._interpolator(T)
+    def df(self, t: float, T: float) -> float:
+        disc_fact_t = self._interpolator(t)  # df(0,t) = e^{-rt}
+        disc_fact_T = self._interpolator(T)  # df(0,T) = e^{-rT}
 
-        disc_fact = disc_fact_T / disc_fact_t
+        disc_fact = disc_fact_T / disc_fact_t  # df(t,T) = e^{-r(T-t)}
 
         return disc_fact
+
+    @staticmethod
+    def create_from_rate_curve(
+        trade_ccy: Currency,
+        collateral_ccy: Currency,
+        times: np.ndarray[Union[dt.date, float]],
+        rates: np.ndarray[float],
+        anchor_date: Optional[dt.date],
+    ):
+        """
+        Creates a discounting curve given an array of times
+        and annually compounded spot interest rates, assuming Act/365 basis
+        """
+        if isinstance(times, np.ndarray[dt.date]):
+            times = (times - anchor_date).days() / 365.0
+
+        dfs = 1 / (1.0 + rates) ** times
+        times = np.concat([[0.0], times])
+        dfs = np.concat([[1.0], dfs])
+
+        return DiscountingCurve(
+            id=DiscountingCurveId(
+                friendly_name=MarketObjects.DISCOUNTING_CURVE,
+                currency=trade_ccy,
+                collateral=collateral_ccy,
+            ),
+            times=times,
+            discount_factors=dfs,
+        )

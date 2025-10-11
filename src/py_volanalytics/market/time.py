@@ -6,7 +6,7 @@ import attrs
 from attrs import define, field
 
 from py_volanalytics.valuation_framework.market_data import MarketObjectId, MarketObject
-from py_volanalytics.types.enums import TimeInfo
+from py_volanalytics.types.enums import TimeInfo, MarketObjects
 
 
 @define(kw_only=True)
@@ -24,17 +24,17 @@ class TimeObjectId(MarketObjectId):
 
 @define(kw_only=True)
 class Time(MarketObject):
-    _id: TimeObjectId = field(
-        validator=attrs.validators.instance_of(TimeObjectId), alias="id"
-    )
     _date: datetime.date = field(
         validator=attrs.validators.instance_of(datetime.date), alias="date"
     )
 
     @property
-    def id(self):
-        return self._id
-
-    @property
     def date(self):
         return self._date
+
+    @staticmethod
+    def create(time_info: TimeInfo, date: datetime.date):
+        return Time(
+            id=TimeObjectId(friendly_name=MarketObjects.TIME, time_info=time_info),
+            date=date,
+        )
